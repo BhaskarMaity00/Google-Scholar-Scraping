@@ -1,28 +1,28 @@
-import spacy
-from collections import Counter
+import re
+import pandas as pd
 
-def extract_keywords(sentence):
-    # Load the SpaCy language model
-    nlp = spacy.load("en_core_web_sm")
+def split_on_conj_preposition_article(text):
+    # Define the regular expression pattern
+    pattern = r'\b(?:but|or|for|in|of|the|a|an|: |, |toward|and|about|trained|using)\b'
 
-    # Process the sentence
-    doc = nlp(sentence)
+    # Use re.split() to split the string based on the pattern
+    result = re.split(pattern, text, flags=re.IGNORECASE)
 
-    # Filter, lemmatize, and remove stop words
-    filtered_words = [
-        token.lemma_.lower()
-        for token in doc
-        if not token.is_stop and token.is_alpha
-    ]
+    # Filter out empty strings from the result
+    result = [word.strip() for word in result if word.strip()]
 
-    # Count word frequencies
-    word_freq = Counter(filtered_words)
+    return result
 
-    # Get the most common words (keywords)
-    keywords = [word for word,freq in word_freq.most_common()]
-
-    return keywords
-
-def main(title):
-    keywords = extract_keywords(title)
-    return keywords
+df=pd.read_csv('google_scholar.csv')
+i = 2016
+titles = df.loc[df['year']==i].title
+file = open(f'F:\\Google Scholar Scraping\keywords\\keywords_{i}.txt','a')
+for title in titles:
+    output = split_on_conj_preposition_article(title)
+    file.write(f'>>> {title} : {output}\n')
+file.close()
+    
+# Example usage
+# input_string = "Developing residential wireless sensor networks for ECG healthcare monitoring"
+# output = split_on_conj_preposition_article(input_string)
+# print(">>>",output)
